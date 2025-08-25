@@ -1,9 +1,10 @@
 === Simple Post Notes ===
 Contributors: bracketspace, Kubitomakita
 Tags: note, notes, post notes, info, post info
-Requires at least: 3.6
-Tested up to: 6.5
-Stable tag: 1.7.8
+Requires at least: 6.0
+Tested up to: 6.8
+Stable tag: 1.8.0
+Requires PHP: 7.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,6 +69,11 @@ Yes! We're offering a [custom plugin development](https://bracketspace.com/custo
 3. Settings
 
 == Changelog ==
+
+= 1.8.0 =
+* [Changed] Removed local translation files in favor of GlotPress repository.
+* [Changed] Coding standards to PSR-12.
+* [Changed] Plugin requirements to WordPress >=6.0 and PHP >=7.0.
 
 = 1.7.8 =
 * [Fixed] Security issue - missing proper user data sanitization for notes placeholder and label.
