@@ -67,8 +67,6 @@ class SPNotes {
 
 		$this->default_notes_label = __( 'Notes', 'simple-post-notes' );
 
-		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
-
 		register_activation_hook( __FILE__, array( 'SPNotes', 'activation' ) );
 		register_uninstall_hook( __FILE__, array( 'SPNotes', 'uninstall' ) );
 
@@ -91,16 +89,6 @@ class SPNotes {
 		add_shortcode( 'spnote', array( $this, 'shortcode_callback' ) );
 
 		add_action( 'pre_get_posts', array( $this, 'query_orderby' ) );
-
-	}
-
-	/**
-	 * Loads textdomain
-	 * @return void
-	 */
-	public function load_textdomain() {
-
-		load_plugin_textdomain( 'simple-post-notes', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 
 	}
 
