@@ -18,6 +18,7 @@ jobs:
       with:
         generate-zip: true
       env:
+        SLUG: ${{ secrets.SLUG }}
         SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
         SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
     - name: Create GitHub release
