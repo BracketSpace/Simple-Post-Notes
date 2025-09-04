@@ -4,7 +4,7 @@ Plugin Name: Simple Post Notes
 Description: Adds simple notes to post, pages and custom post type edit screen.
 Author: BracketSpace
 Author URI: https://bracketspace.com
-Version: 1.8.0
+Version: 1.8.1
 Requires PHP: 7.0
 License: GPL2
 Text Domain: simple-post-notes
@@ -173,7 +173,7 @@ class SPNotes {
             return;
         }
 
-        $label = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_label'], ENT_QUOTES, 'UTF-8')));
+        $label = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_label'] ?? '', ENT_QUOTES, 'UTF-8')));
 
         $placeholder = isset($this->settings['notes_placeholder']) ? $this->settings['notes_placeholder'] : '';
         $placeholder = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($placeholder, ENT_QUOTES, 'UTF-8')));
@@ -206,7 +206,7 @@ class SPNotes {
         $keys2 = array_splice($keys, $insertAfter);
         $vals2 = array_splice($vals, $insertAfter);
 
-        $label = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_label'], ENT_QUOTES, 'UTF-8')));
+        $label = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_label'] ?? '', ENT_QUOTES, 'UTF-8')));
 
         $keys[] = 'spnote';
         $vals[] = $label;
@@ -268,7 +268,7 @@ class SPNotes {
      */
     public function addMetaBox()
     {
-        $label = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_label'], ENT_QUOTES, 'UTF-8')));
+        $label = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_label'] ?? '', ENT_QUOTES, 'UTF-8')));
 
         foreach ($this->settings['post_types'] as $screen) {
             add_meta_box('spnotes',
@@ -294,7 +294,7 @@ class SPNotes {
             return;
         }
 
-        $placeholder = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_placeholder'], ENT_QUOTES, 'UTF-8')));
+        $placeholder = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_placeholder'] ?? '', ENT_QUOTES, 'UTF-8')));
 
         $note = get_post_meta($post->ID, '_spnote', true);
 
@@ -506,7 +506,7 @@ class SPNotes {
             $this->settings['notes_label'] = $this->defaultNotesLabel;
         }
 
-        $label = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_label'], ENT_QUOTES, 'UTF-8')));
+        $label = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_label'] ?? '', ENT_QUOTES, 'UTF-8')));
         echo '<input name="spnotes_settings[notes_label]" id="notes_label" style="width: 300px;" value="' . esc_attr($label) . '">';
     }
 
@@ -525,7 +525,7 @@ class SPNotes {
             $this->settings['notes_placeholder'] = '';
         }
 
-        $placeholder = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_placeholder'], ENT_QUOTES, 'UTF-8')));
+        $placeholder = wp_filter_nohtml_kses(sanitize_text_field(html_entity_decode($this->settings['notes_placeholder'] ?? '', ENT_QUOTES, 'UTF-8')));
 
         echo '<textarea name="spnotes_settings[notes_placeholder]" id="notes_placeholder" style="width: 300px;">';
         echo esc_html($placeholder);

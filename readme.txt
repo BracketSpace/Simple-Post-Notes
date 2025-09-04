@@ -3,7 +3,7 @@ Contributors: bracketspace, Kubitomakita
 Tags: note, notes, post notes, info, post info
 Requires at least: 6.0
 Tested up to: 6.8
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 Requires PHP: 7.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -69,6 +69,9 @@ Yes! We're offering a [custom plugin development](https://bracketspace.com/custo
 3. Settings
 
 == Changelog ==
+
+= 1.8.1 =
+* [Fixed] Added null coalescing operators to prevent PHP warnings when settings array keys don't exist.
 
 = 1.8.0 =
 * [Changed] Removed local translation files in favor of GlotPress repository.
