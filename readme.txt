@@ -70,6 +70,9 @@ Yes! We're offering a [custom plugin development](https://bracketspace.com/custo
 
 == Changelog ==
 
+= [Next] =
+* [Fixed] Added null coalescing operators to prevent PHP warnings when settings array keys don't exist.
+
 = 1.8.0 =
 * [Changed] Removed local translation files in favor of GlotPress repository.
 * [Changed] Coding standards to PSR-12.
