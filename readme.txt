@@ -1,11 +1,11 @@
 === Simple Post Notes ===
 Contributors: bracketspace, Kubitomakita
 Tags: note, notes, post notes, info, post info
-Requires at least: 6.0
-Tested up to: 6.8
+Requires at least: 6.5
+Tested up to: 7.2
 Stable tag: 1.8.0
-Requires PHP: 7.0
-License: GPLv2
+Requires PHP: 7.4
+License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Adds simple notes to post, page and custom post type edit screen.
@@ -24,7 +24,6 @@ Adds simple notes to post, page and custom post type edit screen.
 
 * [Notification - notification system for WordPress](https://bracketspace.com/notification/)
 * [Advanced Cron Manager](https://wordpress.org/plugins/advanced-cron-manager/)
-* [Easy Watermark](https://wordpress.org/plugins/easy-watermark/)
 
 = Custom development =
 
@@ -71,7 +70,15 @@ Yes! We're offering a [custom plugin development](https://bracketspace.com/custo
 == Changelog ==
 
 = [Next] =
-* [Fixed] Added null coalescing operators to prevent PHP warnings when settings array keys don't exist.
+* [Added] Compatibility with WordPress 7.2 and PHP 8.5 and 8.6.
+* [Changed] Plugin requirements to WordPress >=6.5 and PHP >=7.4.
+* [Changed] Post types in the plugin settings are now picked with simple checkboxes.
+* [Changed] The [spnote] shortcode no longer shows notes of drafts, private or password-protected posts to visitors who cannot see those posts.
+* [Changed] Plugin scripts load only on the post list screens where notes are used, instead of every admin page.
+* [Fixed] PHP warnings appearing right after the plugin is activated, before the settings were saved for the first time.
+* [Fixed] Line breaks in a note were lost when editing it with Quick Edit.
+* [Fixed] Security issue - users could add or change notes on posts they are not allowed to edit.
+* [Fixed] Security issue - notes displayed by the shortcode and the plugin settings were not properly sanitized.
 
 = 1.8.0 =
 * [Changed] Removed local translation files in favor of GlotPress repository.
@@ -111,7 +118,7 @@ Yes! We're offering a [custom plugin development](https://bracketspace.com/custo
 
 = 1.6 =
 * [Added] Support for quick and bulk edit
-* [Added] Shortcode [sponote]
+* [Added] Shortcode [spnote]
 
 = 1.5 =
 * [Fixed] Bug with duplicated post notes for custom post type
