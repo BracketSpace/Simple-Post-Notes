@@ -1,11 +1,11 @@
 === Simple Post Notes ===
 Contributors: bracketspace, Kubitomakita
 Tags: note, notes, post notes, info, post info
-Requires at least: 6.0
-Tested up to: 6.8
-Stable tag: 1.8.1
-Requires PHP: 7.0
-License: GPLv2
+Requires at least: 6.5
+Tested up to: 7.2
+Stable tag: 1.9.0
+Requires PHP: 7.4
+License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Adds simple notes to post, page and custom post type edit screen.
@@ -24,7 +24,6 @@ Adds simple notes to post, page and custom post type edit screen.
 
 * [Notification - notification system for WordPress](https://bracketspace.com/notification/)
 * [Advanced Cron Manager](https://wordpress.org/plugins/advanced-cron-manager/)
-* [Easy Watermark](https://wordpress.org/plugins/easy-watermark/)
 
 = Custom development =
 
@@ -58,6 +57,11 @@ Or use
 `add_filter( 'spn/columns-display/POST_TYPE_SLUG', '__return_false' );`
 To disable SPN column only for specific post type
 
+= Can I change the list of post types offered in the settings? =
+
+Yes, by a simple filter. It receives an array of post type objects keyed by post type name:
+`add_filter( 'spn/post-types', function ( $postTypes ) { unset( $postTypes['POST_TYPE_SLUG'] ); return $postTypes; } );`
+
 = Can you create a plugin for me? =
 
 Yes! We're offering a [custom plugin development](https://bracketspace.com/custom-development/) services. Feel free to contact us to find out how we can help you.
@@ -69,6 +73,23 @@ Yes! We're offering a [custom plugin development](https://bracketspace.com/custo
 3. Settings
 
 == Changelog ==
+
+= 1.9.0 =
+* [Added] Compatibility with WordPress 7.2 and PHP 8.5 and 8.6.
+* [Added] Setting for the height of the notes field.
+* [Added] Post types registered by other plugins that are not public, but have their own admin screen, can now be selected in the settings.
+* [Changed] Plugin requirements to WordPress >=6.5 and PHP >=7.4.
+* [Changed] Post types in the plugin settings are now picked with simple checkboxes.
+* [Changed] The [spnote] shortcode no longer shows notes of drafts, private or password-protected posts to visitors who cannot see those posts.
+* [Changed] Plugin scripts load only on the post list screens where notes are used, instead of every admin page.
+* [Fixed] Sorting by the notes column no longer hides posts without a note. Posts without a note are now always listed last.
+* [Fixed] Notes can now be used with the Notification plugin - the notes box and column were hidden on its screens.
+* [Fixed] PHP warnings appearing right after the plugin is activated, before the settings were saved for the first time.
+* [Fixed] Line breaks in a note were lost when editing it with Quick Edit.
+* [Fixed] The notes field was missing in Quick Edit and Bulk Edit for users who can edit a custom post type but not regular posts.
+* [Fixed] Bulk Edit now shows a message when a note could not be saved, instead of silently skipping it.
+* [Fixed] Security issue - users could add or change notes on posts they are not allowed to edit.
+* [Fixed] Security issue - notes displayed by the shortcode and the plugin settings were not properly sanitized.
 
 = 1.8.1 =
 * [Fixed] Added null coalescing operators to prevent PHP warnings when settings array keys don't exist.
@@ -111,7 +132,7 @@ Yes! We're offering a [custom plugin development](https://bracketspace.com/custo
 
 = 1.6 =
 * [Added] Support for quick and bulk edit
-* [Added] Shortcode [sponote]
+* [Added] Shortcode [spnote]
 
 = 1.5 =
 * [Fixed] Bug with duplicated post notes for custom post type
