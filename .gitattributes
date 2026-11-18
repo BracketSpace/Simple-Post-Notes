@@ -1,3 +1,7 @@
+# Line endings
+* text=auto eol=lf
+*.png binary
+
 # Directories
 /.wordpress-org export-ignore
 /.github export-ignore
