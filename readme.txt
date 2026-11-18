@@ -24,7 +24,6 @@ Adds simple notes to post, page and custom post type edit screen.
 
 * [Notification - notification system for WordPress](https://bracketspace.com/notification/)
 * [Advanced Cron Manager](https://wordpress.org/plugins/advanced-cron-manager/)
-* [Easy Watermark](https://wordpress.org/plugins/easy-watermark/)
 
 = Custom development =
 
