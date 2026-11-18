@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
-        uses: actions/checkout@v4
+        uses: actions/checkout@v1
         with:
           ref: 'master'
       - name: Checkout develop
-        uses: actions/checkout@v4
+        uses: actions/checkout@v1
         with:
           ref: 'develop'
           clean: false
