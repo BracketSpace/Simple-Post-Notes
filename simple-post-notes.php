@@ -416,7 +416,7 @@ class SPNotes {
             <form action="options.php" method="post" enctype="multipart/form-data">
                 <?php settings_fields('spnotes_settings'); ?>
                 <?php do_settings_sections('spnotes'); ?>
-                <?php submit_button(__('Save', 'spnotes'), 'primary', 'save'); ?>
+                <?php submit_button(__('Save', 'simple-post-notes'), 'primary', 'save'); ?>
             </form>
         </div>
     <?php
@@ -575,3 +575,4 @@ class SPNotes {
 add_action('init', function() {
 	new SPNotes();
 });
+
