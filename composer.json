@@ -1,0 +1,21 @@
+{
+    "name": "bracketspace/simple-post-notes",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "wp-coding-standards/wpcs": "^3",
+        "phpcompatibility/phpcompatibility-wp": "^2.1.8",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "scripts": {
+        "phpcs": "phpcs"
+    }
+}
