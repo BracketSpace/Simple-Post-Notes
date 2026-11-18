@@ -1,63 +1,97 @@
-( function($) {
-
-	$( document ).ready( function() {
-		$( '.chosen-select' ).chosen();
-	} );
+jQuery( function ( $ ) {
 
 	if ( typeof inlineEditPost !== 'undefined' ) {
 
-		var $wp_inline_edit = inlineEditPost.edit;
+		var wpInlineEdit = inlineEditPost.edit;
 
-		inlineEditPost.edit = function( id ) {
+		inlineEditPost.edit = function ( id ) {
 
-			$wp_inline_edit.apply( this, arguments );
+			wpInlineEdit.apply( this, arguments );
 
-			var $post_id = 0;
+			var postId = 0;
 
-			if ( typeof( id ) == 'object' ) {
-				$post_id = parseInt( this.getId( id ) );
+			if ( typeof ( id ) === 'object' ) {
+				postId = parseInt( this.getId( id ), 10 );
 			}
 
-			if ( $post_id > 0 ) {
-				var $edit_row = $( '#edit-' + $post_id );
-				var $release_date = $( '#spnote-' + $post_id ).text();
-				$edit_row.find( 'textarea[name="spnote"]' ).val( $release_date );
+			if ( postId > 0 ) {
+				var $editRow = $( '#edit-' + postId );
+				// Raw note (with line breaks) printed in the column; empty when the post has no note.
+				var note = $( '#spnote-raw-' + postId ).attr( 'data-note' ) || '';
+				$editRow.find( 'textarea[name="spnote"]' ).val( note );
 			}
 
-		}
+		};
 
 	}
 
-	$( '#bulk_edit' ).on( 'click', function() {
+	var bulkSubmitting = false;
 
-		var $bulk_row = $( '#bulk-edit' );
+	function showBulkError( $bulkRow ) {
+		bulkSubmitting = false;
 
-		var $post_ids = new Array();
+		$( '<p class="spnote-bulk-error notice notice-error inline"></p>' )
+			.text( ( typeof spnotesAdmin !== 'undefined' && spnotesAdmin.bulkError ) || '' )
+			.insertAfter( $bulkRow.find( 'textarea[name="spnote"]' ).closest( 'label' ) );
+	}
 
-		$bulk_row.find('#bulk-titles-list .ntdelbutton').each(function () {
-			$post_ids.push($(this).attr('id').replace(/^(_)/i, ''));
-		});
+	$( '#bulk_edit' ).on( 'click', function ( event ) {
 
-		$post_ids.map(function (value, index, array) {
-			array[index] = parseInt(value);
-		});
+		// Second pass: the note is saved, let the form submit normally.
+		if ( bulkSubmitting ) {
+			return;
+		}
 
-		var spnote = $bulk_row.find( 'textarea[name="spnote"]' ).val();
-		var nonce = $bulk_row.find( '#spnotes_nonce' ).val();
+		var $button = $( this );
+		var $bulkRow = $( '#bulk-edit' );
+		var spnote = $bulkRow.find( 'textarea[name="spnote"]' ).val();
+
+		// An empty bulk note never overwrites existing notes.
+		if ( ! spnote || ! spnote.trim() ) {
+			return;
+		}
+
+		var postIds = [];
+
+		$bulkRow.find( '#bulk-titles-list .ntdelbutton' ).each( function () {
+			var postId = parseInt( $( this ).attr( 'id' ).replace( /^_/, '' ), 10 );
+
+			if ( postId > 0 ) {
+				postIds.push( postId );
+			}
+		} );
+
+		if ( ! postIds.length ) {
+			return;
+		}
+
+		event.preventDefault();
+		bulkSubmitting = true;
+
+		$bulkRow.find( '.spnote-bulk-error' ).remove();
 
 		$.ajax( {
 			url   : ajaxurl,
 			type  : 'POST',
-			async : false,
 			cache : false,
 			data  : {
 				action   : 'spnote_save_bulk_edit',
-				post_ids : $post_ids,
+				post_ids : postIds,
 				spnote   : spnote,
-				nonce    : nonce
+				nonce    : $bulkRow.find( 'input[name="spnotes_nonce"]' ).val()
 			}
+		} ).done( function ( response ) {
+			if ( response && response.success === true ) {
+				// Native click keeps the submit button's name/value in the request.
+				$button[ 0 ].click();
+				bulkSubmitting = false;
+			} else {
+				showBulkError( $bulkRow );
+			}
+		} ).fail( function () {
+			showBulkError( $bulkRow );
 		} );
 
-	});
+	} );
 
-} )( jQuery );
+} );
