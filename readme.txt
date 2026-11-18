@@ -3,7 +3,7 @@ Contributors: bracketspace, Kubitomakita
 Tags: note, notes, post notes, info, post info
 Requires at least: 6.5
 Tested up to: 7.2
-Stable tag: 1.8.1
+Stable tag: 1.9.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -74,7 +74,7 @@ Yes! We're offering a [custom plugin development](https://bracketspace.com/custo
 
 == Changelog ==
 
-= [Next] =
+= 1.9.0 =
 * [Added] Compatibility with WordPress 7.2 and PHP 8.5 and 8.6.
 * [Added] Setting for the height of the notes field.
 * [Added] Post types registered by other plugins that are not public, but have their own admin screen, can now be selected in the settings.

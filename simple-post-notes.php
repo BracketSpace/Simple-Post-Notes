@@ -4,7 +4,7 @@ Plugin Name: Simple Post Notes
 Description: Adds simple notes to post, pages and custom post type edit screen.
 Author: BracketSpace
 Author URI: https://bracketspace.com
-Version: 1.8.1
+Version: 1.9.0
 Requires PHP: 7.4
 Requires at least: 6.5
 License: GPLv2 or later
