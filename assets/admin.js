@@ -27,6 +27,14 @@ jQuery( function ( $ ) {
 
 	var bulkSubmitting = false;
 
+	function showBulkError( $bulkRow ) {
+		bulkSubmitting = false;
+
+		$( '<p class="spnote-bulk-error notice notice-error inline"></p>' )
+			.text( ( typeof spnotesAdmin !== 'undefined' && spnotesAdmin.bulkError ) || '' )
+			.insertAfter( $bulkRow.find( 'textarea[name="spnote"]' ).closest( 'label' ) );
+	}
+
 	$( '#bulk_edit' ).on( 'click', function ( event ) {
 
 		// Second pass: the note is saved, let the form submit normally.
@@ -39,7 +47,7 @@ jQuery( function ( $ ) {
 		var spnote = $bulkRow.find( 'textarea[name="spnote"]' ).val();
 
 		// An empty bulk note never overwrites existing notes.
-		if ( ! spnote || ! $.trim( spnote ) ) {
+		if ( ! spnote || ! spnote.trim() ) {
 			return;
 		}
 
@@ -60,6 +68,8 @@ jQuery( function ( $ ) {
 		event.preventDefault();
 		bulkSubmitting = true;
 
+		$bulkRow.find( '.spnote-bulk-error' ).remove();
+
 		$.ajax( {
 			url   : ajaxurl,
 			type  : 'POST',
@@ -70,10 +80,16 @@ jQuery( function ( $ ) {
 				spnote   : spnote,
 				nonce    : $bulkRow.find( 'input[name="spnotes_nonce"]' ).val()
 			}
-		} ).always( function () {
-			// Native click keeps the submit button's name/value in the request.
-			$button[ 0 ].click();
-			bulkSubmitting = false;
+		} ).done( function ( response ) {
+			if ( response && response.success === true ) {
+				// Native click keeps the submit button's name/value in the request.
+				$button[ 0 ].click();
+				bulkSubmitting = false;
+			} else {
+				showBulkError( $bulkRow );
+			}
+		} ).fail( function () {
+			showBulkError( $bulkRow );
 		} );
 
 	} );

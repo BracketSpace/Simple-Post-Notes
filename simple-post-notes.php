@@ -217,7 +217,9 @@ class SPNotes {
             return;
         }
 
-        if (! current_user_can('edit_posts')) {
+        $typeObject = get_post_type_object($postType);
+
+        if (! $typeObject || ! current_user_can($typeObject->cap->edit_posts)) {
             return;
         }
 
@@ -341,7 +343,8 @@ class SPNotes {
 
         $note = (string) get_post_meta($post->ID, '_spnote', true);
 
-        echo '<textarea style="display: block; width: 100%;" rows="5" name="spnote" placeholder="' . esc_attr($this->getPlaceholder()) . '">' . esc_textarea($note) . '</textarea>';
+        // esc_html() on purpose: stored notes may already hold entities (sanitize_textarea_field() turns a lone "<" into "&lt;"), and esc_textarea() would double-encode them.
+        echo '<textarea style="display: block; width: 100%;" rows="5" name="spnote" placeholder="' . esc_attr($this->getPlaceholder()) . '">' . esc_html($note) . '</textarea>';
     }
 
     /**
@@ -423,6 +426,11 @@ class SPNotes {
         }
 
         if (! wp_verify_nonce($this->getPostedNonce('spnotes_nonce'), 'spnotes_note_bulk_edit')) {
+            return;
+        }
+
+        // Only the post being edited, not other posts saved during the same request.
+        if (! isset($_POST['post_ID']) || absint(wp_unslash($_POST['post_ID'])) !== (int) $post_id) {
             return;
         }
 
@@ -643,6 +651,9 @@ class SPNotes {
         }
 
         wp_enqueue_script('spnotes/admin', SPNOTES . 'assets/admin.js', ['jquery'], (string) filemtime(SPNOTES_DIR . 'assets/admin.js'), true);
+        wp_localize_script('spnotes/admin', 'spnotesAdmin', [
+            'bulkError' => __('The note could not be saved. Reload the page and try again.', 'simple-post-notes'),
+        ]);
     }
 
     /**

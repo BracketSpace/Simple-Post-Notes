@@ -77,6 +77,8 @@ Yes! We're offering a [custom plugin development](https://bracketspace.com/custo
 * [Changed] Plugin scripts load only on the post list screens where notes are used, instead of every admin page.
 * [Fixed] PHP warnings appearing right after the plugin is activated, before the settings were saved for the first time.
 * [Fixed] Line breaks in a note were lost when editing it with Quick Edit.
+* [Fixed] The notes field was missing in Quick Edit and Bulk Edit for users who can edit a custom post type but not regular posts.
+* [Fixed] Bulk Edit now shows a message when a note could not be saved, instead of silently skipping it.
 * [Fixed] Security issue - users could add or change notes on posts they are not allowed to edit.
 * [Fixed] Security issue - notes displayed by the shortcode and the plugin settings were not properly sanitized.
 
