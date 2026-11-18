@@ -63,6 +63,12 @@ class SPNotes {
     public static $defaultPostTypes = ['post', 'page'];
 
     /**
+     * Default notes field height (rows)
+     * @var int
+     */
+    const DEFAULT_ROWS = 5;
+
+    /**
      * Default notes label
      * @var string
      */
@@ -93,6 +99,10 @@ class SPNotes {
 
         add_shortcode('spnote', [$this, 'shortcodeCallback']);
 
+        // The Notification plugin hides every metabox and column on its screen unless allowed.
+        add_filter('notification/admin/allow_metabox/spnotes', '__return_true');
+        add_filter('notification/admin/allow_column/spnote', '__return_true');
+
         add_action('pre_get_posts', [$this, 'queryOrderby']);
     }
 
@@ -107,6 +117,7 @@ class SPNotes {
             'post_types'        => self::$defaultPostTypes,
             'notes_label'       => '',
             'notes_placeholder' => '',
+            'notes_rows'        => self::DEFAULT_ROWS,
         ]);
     }
 
@@ -146,13 +157,67 @@ class SPNotes {
 
         $placeholder = (isset($option['notes_placeholder']) && is_string($option['notes_placeholder'])) ? $option['notes_placeholder'] : '';
 
+        $rows = (isset($option['notes_rows']) && is_scalar($option['notes_rows'])) ? $option['notes_rows'] : self::DEFAULT_ROWS;
+
         $this->settings = [
             'post_types'        => $postTypes,
             'notes_label'       => $label,
             'notes_placeholder' => $placeholder,
+            'notes_rows'        => $this->sanitizeRows($rows),
         ];
 
         return $this->settings;
+    }
+
+    /**
+     * Casts the notes field height to an integer between 2 and 50
+     * @param  mixed $value raw value
+     * @return int
+     */
+    private function sanitizeRows($value)
+    {
+        if (! is_numeric($value)) {
+            return self::DEFAULT_ROWS;
+        }
+
+        return max(2, min(50, (int) $value));
+    }
+
+    /**
+     * Gets post types the notes can be enabled for
+     *
+     * Post types with their own admin screen or public ones, except attachments,
+     * filtered by spn/post-types and sorted by label.
+     *
+     * @return array WP_Post_Type objects keyed by name
+     */
+    public function getSelectablePostTypes()
+    {
+        $postTypes = array_merge(
+            get_post_types(['public' => true], 'objects'),
+            get_post_types(['show_ui' => true], 'objects')
+        );
+        unset($postTypes['attachment']);
+
+        $postTypes = apply_filters('spn/post-types', $postTypes);
+
+        if (! is_array($postTypes)) {
+            return [];
+        }
+
+        // Re-key by name, so the list is valid whatever keys the filter returned.
+        $keyed = [];
+        foreach ($postTypes as $postType) {
+            if ($postType instanceof WP_Post_Type) {
+                $keyed[$postType->name] = $postType;
+            }
+        }
+
+        uasort($keyed, function ($a, $b) {
+            return strcasecmp((string) $a->labels->name, (string) $b->labels->name);
+        });
+
+        return $keyed;
     }
 
     /**
@@ -248,7 +313,9 @@ class SPNotes {
         $keys = array_keys($columns);
         $vals = array_values($columns);
 
-        $insertAfter = array_search($insertKey, $keys) + 1;
+        // Without a title column (some post types remove it) the note goes last.
+        $titlePosition = array_search($insertKey, $keys, true);
+        $insertAfter = false === $titlePosition ? count($keys) : $titlePosition + 1;
 
         $keys2 = array_splice($keys, $insertAfter);
         $vals2 = array_splice($vals, $insertAfter);
@@ -281,10 +348,49 @@ class SPNotes {
             return;
         }
 
-        if ('spnote' === $query->get('orderby')) {
-            $query->set('meta_key', '_spnote');
-            $query->set('orderby', 'meta_value');
+        if ('spnote' !== $query->get('orderby')) {
+            return;
         }
+
+        $direction = 'ASC' === strtoupper((string) $query->get('order')) ? 'ASC' : 'DESC';
+
+        $filter = null;
+        $filter = function ($clauses, $currentQuery) use (&$filter, $query, $direction) {
+            if ($currentQuery !== $query) {
+                return $clauses;
+            }
+
+            remove_filter('posts_clauses', $filter, 10);
+
+            return $this->sortClausesByNote($clauses, $direction);
+        };
+
+        add_filter('posts_clauses', $filter, 10, 2);
+    }
+
+    /**
+     * Rewrites query clauses to sort by the note
+     *
+     * Posts without a note (no meta row or an empty one) are always last, whatever
+     * the direction. The note is joined as a one-row-per-post derived table, so
+     * posts with several _spnote rows are not duplicated and counts stay correct.
+     *
+     * @param  array  $clauses  query clauses
+     * @param  string $direction ASC or DESC
+     * @return array
+     */
+    private function sortClausesByNote($clauses, $direction)
+    {
+        global $wpdb;
+
+        $clauses['join'] .= $wpdb->prepare(
+            " LEFT JOIN (SELECT post_id, MAX(meta_value) AS note FROM {$wpdb->postmeta} WHERE meta_key = %s GROUP BY post_id) AS spnote_sort ON spnote_sort.post_id = {$wpdb->posts}.ID",
+            '_spnote'
+        );
+
+        $clauses['orderby'] = "(spnote_sort.note IS NULL OR spnote_sort.note = '') ASC, spnote_sort.note {$direction}, {$wpdb->posts}.post_date DESC, {$wpdb->posts}.ID DESC";
+
+        return $clauses;
     }
 
     /**
@@ -342,9 +448,10 @@ class SPNotes {
         wp_nonce_field('spnotes_note_' . $post->ID, 'spnotes_nonce');
 
         $note = (string) get_post_meta($post->ID, '_spnote', true);
+        $settings = $this->getSettings();
 
         // esc_html() on purpose: stored notes may already hold entities (sanitize_textarea_field() turns a lone "<" into "&lt;"), and esc_textarea() would double-encode them.
-        echo '<textarea style="display: block; width: 100%;" rows="5" name="spnote" placeholder="' . esc_attr($this->getPlaceholder()) . '">' . esc_html($note) . '</textarea>';
+        echo '<textarea style="display: block; width: 100%;" rows="' . esc_attr((string) (int) $settings['notes_rows']) . '" name="spnote" placeholder="' . esc_attr($this->getPlaceholder()) . '">' . esc_html($note) . '</textarea>';
     }
 
     /**
@@ -515,12 +622,14 @@ class SPNotes {
         $input = is_array($input) ? $input : [];
 
         $postTypes = (isset($input['post_types']) && is_array($input['post_types'])) ? $input['post_types'] : [];
-        $postTypes = array_filter(array_map('sanitize_key', array_filter($postTypes, 'is_string')), 'post_type_exists');
+        $selectable = array_keys($this->getSelectablePostTypes());
+        $postTypes = array_intersect(array_map('sanitize_key', array_filter($postTypes, 'is_string')), $selectable);
 
         return [
             'post_types'        => array_values(array_unique($postTypes)),
             'notes_label'       => (isset($input['notes_label']) && is_string($input['notes_label'])) ? sanitize_text_field($input['notes_label']) : '',
             'notes_placeholder' => (isset($input['notes_placeholder']) && is_string($input['notes_placeholder'])) ? sanitize_text_field($input['notes_placeholder']) : '',
+            'notes_rows'        => $this->sanitizeRows(isset($input['notes_rows']) ? $input['notes_rows'] : null),
         ];
     }
 
@@ -565,6 +674,14 @@ class SPNotes {
             'spnotes',
             'spnotes_general'
         );
+
+        add_settings_field(
+            'notes_rows',
+            __('Notes field height', 'simple-post-notes'),
+            [$this, 'settingsNotesRowsField'],
+            'spnotes',
+            'spnotes_general'
+        );
     }
 
     /**
@@ -580,15 +697,11 @@ class SPNotes {
         $settings = $this->getSettings();
 
         echo '<fieldset id="post_types">';
-            foreach (get_post_types(['public' => true], 'objects') as $postType) {
-                if ($postType->name == 'attachment') {
-                    continue;
-                }
-
+            foreach ($this->getSelectablePostTypes() as $postType) {
                 $checked = in_array($postType->name, $settings['post_types'], true);
                 echo '<label style="display: block; margin-bottom: 4px;">';
                     echo '<input type="checkbox" name="spnotes_settings[post_types][]" value="' . esc_attr($postType->name) . '"' . checked($checked, true, false) . '> ';
-                    echo esc_html($postType->labels->name);
+                    echo esc_html($postType->labels->name . ' (' . $postType->name . ')');
                 echo '</label>';
             }
         echo '</fieldset>';
@@ -625,6 +738,23 @@ class SPNotes {
         echo '</textarea>';
 
         echo '<p class="description">' . esc_html__('It will be displayed on a post edit page as a help message inside the note field.', 'simple-post-notes') . '</p>';
+    }
+
+    /**
+     * Settings fields
+     *
+     * Notes field height output
+     *
+     * @access  public
+     *
+     * @return  void
+     */
+    public function settingsNotesRowsField()
+    {
+        $settings = $this->getSettings();
+
+        echo '<input type="number" min="2" max="50" step="1" class="small-text" name="spnotes_settings[notes_rows]" id="notes_rows" value="' . esc_attr((string) (int) $settings['notes_rows']) . '">';
+        echo '<p class="description">' . esc_html__('Number of text rows of the note field on the post edit screen (2 to 50).', 'simple-post-notes') . '</p>';
     }
 
     /**

@@ -57,6 +57,11 @@ Or use
 `add_filter( 'spn/columns-display/POST_TYPE_SLUG', '__return_false' );`
 To disable SPN column only for specific post type
 
+= Can I change the list of post types offered in the settings? =
+
+Yes, by a simple filter. It receives an array of post type objects keyed by post type name:
+`add_filter( 'spn/post-types', function ( $postTypes ) { unset( $postTypes['POST_TYPE_SLUG'] ); return $postTypes; } );`
+
 = Can you create a plugin for me? =
 
 Yes! We're offering a [custom plugin development](https://bracketspace.com/custom-development/) services. Feel free to contact us to find out how we can help you.
@@ -71,10 +76,14 @@ Yes! We're offering a [custom plugin development](https://bracketspace.com/custo
 
 = [Next] =
 * [Added] Compatibility with WordPress 7.2 and PHP 8.5 and 8.6.
+* [Added] Setting for the height of the notes field.
+* [Added] Post types registered by other plugins that are not public, but have their own admin screen, can now be selected in the settings.
 * [Changed] Plugin requirements to WordPress >=6.5 and PHP >=7.4.
 * [Changed] Post types in the plugin settings are now picked with simple checkboxes.
 * [Changed] The [spnote] shortcode no longer shows notes of drafts, private or password-protected posts to visitors who cannot see those posts.
 * [Changed] Plugin scripts load only on the post list screens where notes are used, instead of every admin page.
+* [Fixed] Sorting by the notes column no longer hides posts without a note. Posts without a note are now always listed last.
+* [Fixed] Notes can now be used with the Notification plugin - the notes box and column were hidden on its screens.
 * [Fixed] PHP warnings appearing right after the plugin is activated, before the settings were saved for the first time.
 * [Fixed] Line breaks in a note were lost when editing it with Quick Edit.
 * [Fixed] The notes field was missing in Quick Edit and Bulk Edit for users who can edit a custom post type but not regular posts.
